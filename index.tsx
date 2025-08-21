@@ -534,7 +534,7 @@ const WorkoutPlanDisplay = ({ plan }) => {
     ]});
 };
 
-const PlanGeneratorView = ({ planType, planRequest, onPlanRequestChange, handleGeneratePlan, isGeneratingPlan, error, generatedMealPlan, generatedWorkoutPlan, analysisResult, userHistory }) => {
+const PlanGeneratorView = ({ planType, planRequest, onPlanRequestChange, handleGeneratePlan, isGeneratingPlan, error, generatedMealPlan, generatedWorkoutPlan, analysisResult, userHistory, workoutMode, onWorkoutModeChange }) => {
     const title = planType === 'menu' ? 'Tạo Thực đơn AI' : 'Tạo Lịch tập AI';
     const icon = planType === 'menu' ? _jsx(Apple, { className: "icon" }) : _jsx(Dumbbell, { className: "icon" });
     const generatedPlan = planType === 'menu' ? generatedMealPlan : generatedWorkoutPlan;
@@ -544,7 +544,7 @@ const PlanGeneratorView = ({ planType, planRequest, onPlanRequestChange, handleG
         return _jsx("div", { className: "placeholder-container", children: "Vui lòng thực hiện một phân tích sức khỏe trước để AI có thể tạo kế hoạch cá nhân hóa cho bạn." });
     }
 
-    return _jsxs("div", { className: "planner-container", children: [_jsxs("h2", { children: [icon, title] }), _jsxs("div", { className: "planner-controls", children: [_jsxs("div", { className: "plan-request-input-group", children: [_jsx("label", { htmlFor: "plan-request", children: "Yêu cầu kế hoạch của bạn:" }), _jsx("input", { type: "text", id: "plan-request", className: "plan-request-input", value: planRequest, onChange: (e) => onPlanRequestChange(e.target.value), placeholder: "VD: Thực đơn 7 ngày, tập 3 buổi/tuần T2,4,6" })] }), _jsxs("button", { onClick: () => handleGeneratePlan(planType), disabled: isGeneratingPlan || !planRequest, className: "generate-button", children: [isGeneratingPlan ? "Đang tạo..." : "Tạo kế hoạch", _jsx(Sparkles, { size: 18 })] })] }), error && _jsx("div", { className: "error-container small", children: _jsx("p", { children: error }) }), isGeneratingPlan && _jsxs("div", { className: "loading-container", children: [_jsx("div", { className: "spinner" }), _jsx("p", { children: planType === 'menu' ? 'AI đang nấu thực đơn cho bạn...' : 'AI đang xây dựng lịch tập...' })] }), !isGeneratingPlan && !generatedPlan && _jsx("div", { className: "placeholder-container", children: "Nhập yêu cầu của bạn và nhấn 'Tạo kế hoạch' để bắt đầu." }), generatedPlan && (planType === 'menu' ? _jsx(MealPlanDisplay, { plan: generatedMealPlan }) : _jsx(WorkoutPlanDisplay, { plan: generatedWorkoutPlan }))] });
+    return _jsxs("div", { className: "planner-container", children: [_jsxs("h2", { children: [icon, title] }), _jsxs("div", { className: "planner-controls", children: [_jsxs("div", { className: "plan-request-input-group", children: [_jsx("label", { htmlFor: "plan-request", children: "Yêu cầu kế hoạch của bạn:" }), _jsx("input", { type: "text", id: "plan-request", className: "plan-request-input", value: planRequest, onChange: (e) => onPlanRequestChange(e.target.value), placeholder: "VD: Thực đơn 7 ngày, tập 3 buổi/tuần T2,4,6" })] }), planType === 'workout' && _jsxs("div", { className: "plan-request-input-group", children: [_jsx("label", { children: "Chế độ tập:" }), _jsxs("div", { className: "workout-mode-selector", children: [_jsx("button", { className: workoutMode === 'Normal' ? 'active' : '', onClick: () => onWorkoutModeChange('Normal'), children: "Bình thường" }), _jsx("button", { className: workoutMode === 'Gymer' ? 'active' : '', onClick: () => onWorkoutModeChange('Gymer'), children: "Gymer" })] })] }), _jsxs("button", { onClick: () => handleGeneratePlan(planType), disabled: isGeneratingPlan || !planRequest, className: "generate-button", children: [isGeneratingPlan ? "Đang tạo..." : "Tạo kế hoạch", _jsx(Sparkles, { size: 18 })] })] }), error && _jsx("div", { className: "error-container small", children: _jsx("p", { children: error }) }), isGeneratingPlan && _jsxs("div", { className: "loading-container", children: [_jsx("div", { className: "spinner" }), _jsx("p", { children: planType === 'menu' ? 'AI đang nấu thực đơn cho bạn...' : 'AI đang xây dựng lịch tập...' })] }), !isGeneratingPlan && !generatedPlan && _jsx("div", { className: "placeholder-container", children: "Nhập yêu cầu của bạn và nhấn 'Tạo kế hoạch' để bắt đầu." }), generatedPlan && (planType === 'menu' ? _jsx(MealPlanDisplay, { plan: generatedMealPlan }) : _jsx(WorkoutPlanDisplay, { plan: generatedWorkoutPlan }))] });
 };
 
 
@@ -575,6 +575,7 @@ const App = () => {
     const [generatedWorkoutPlan, setGeneratedWorkoutPlan] = useState(null);
     const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
     const [planRequest, setPlanRequest] = useState('');
+    const [workoutMode, setWorkoutMode] = useState('Normal');
     
     // Auth state
     const [email, setEmail] = useState('');
@@ -825,7 +826,7 @@ ${healthSummary}
             };
             setGeneratedMealPlan(null);
         } else if (planType === 'workout') {
-             prompt = `Bạn là một huấn luyện viên thể hình AI chuyên nghiệp. Nhiệm vụ của bạn là tạo một kế hoạch tập luyện được cá nhân hóa, TUÂN THỦ TUYỆT ĐỐI yêu cầu của người dùng.
+            const normalPrompt = `Bạn là một huấn luyện viên cá nhân AI. Nhiệm vụ của bạn là tạo một kế hoạch tập luyện tại nhà hoặc với các dụng cụ cơ bản, TUÂN THỦ TUYỆT ĐỐI yêu cầu của người dùng.
 
 **Báo cáo sức khỏe của người dùng:**
 ${healthSummary}
@@ -835,16 +836,27 @@ ${healthSummary}
 
 **QUY TẮC BẮT BUỘC:**
 1.  **SỐ LƯỢNG NGÀY LÀ TUYỆT ĐỐI:** Phân tích kỹ "${planRequest}". Bạn chỉ được phép tạo kế hoạch cho CHÍNH XÁC những ngày và số lượng ngày mà người dùng yêu cầu.
-    *   VÍ DỤ 1: Nếu người dùng yêu cầu "chiều thứ 3", bạn CHỈ được trả về JSON với MỘT đối tượng duy nhất cho "Thứ Ba".
-    *   VÍ DỤ 2: Nếu người dùng yêu cầu "kế hoạch 3 ngày", bạn CHỈ được trả về MỘT mảng có ĐÚNG 3 đối tượng.
-    *   VÍ DỤ 3: Nếu người dùng yêu cầu "T2, T4, T6", bạn CHỈ được trả về MỘT mảng có ĐÚNG 3 đối tượng cho các ngày đó.
 2.  **KHÔNG TỰ Ý THÊM NGÀY:** TUYỆT ĐỐI KHÔNG được thêm bất kỳ ngày nào khác, kể cả ngày nghỉ, nếu người dùng không yêu cầu một kế hoạch theo cấu trúc cả tuần. Chỉ thêm ngày nghỉ nếu người dùng yêu cầu rõ ràng như "kế hoạch cho cả tuần, tập 3 ngày".
 3.  **ĐỊNH DẠNG NGÀY NGHỈ:** Nếu một ngày được xác định là ngày nghỉ, hãy đặt 'workoutFocus' thành "Ngày nghỉ" và 'exercises' phải là một mảng rỗng \`[]\`.
-4.  **ĐỊNH DẠNG ĐẦU RA (JSON):**
-    - Trả về một mảng các đối tượng.
-    - Mỗi đối tượng phải có: 'day', 'workoutFocus', 'exercises' (mảng), và 'dailyFitnessTip'.
+4.  **ĐỊNH DẠNG ĐẦU RA (JSON):** Trả về một mảng các đối tượng. Mỗi đối tượng phải có: 'day', 'workoutFocus', 'exercises' (mảng), và 'dailyFitnessTip'.
+5.  **CHỈ TRẢ LỜI BẰNG JSON.**`;
+            
+            const gymerPrompt = `Bạn là một huấn luyện viên thể hình AI chuyên nghiệp tại phòng gym. Nhiệm vụ của bạn là tạo một kế hoạch tập luyện được cá nhân hóa, **sử dụng các máy móc và thiết bị phổ biến trong phòng gym (tạ đòn, máy kéo cáp, máy leg press, v.v.)**. Kế hoạch nên dựa trên các phương pháp tập luyện gym hiệu quả (ví dụ: Push/Pull/Legs, Upper/Lower, Full Body) và TUÂN THỦ TUYỆT ĐỐI yêu cầu của người dùng.
+
+**Báo cáo sức khỏe của người dùng:**
+${healthSummary}
+
+**Yêu cầu của người dùng về kế hoạch (QUAN TRỌNG NHẤT VÀ PHẢI TUÂN THEO 100%):**
+"${planRequest}"
+
+**QUY TẮC BẮT BUỘC:**
+1.  **SỐ LƯỢNG NGÀY LÀ TUYỆT ĐỐI:** Phân tích kỹ "${planRequest}". Bạn chỉ được phép tạo kế hoạch cho CHÍNH XÁC những ngày và số lượng ngày mà người dùng yêu cầu.
+2.  **KHÔNG TỰ Ý THÊM NGÀY:** TUYỆT ĐỐI KHÔNG được thêm bất kỳ ngày nào khác, kể cả ngày nghỉ, nếu người dùng không yêu cầu một kế hoạch theo cấu trúc cả tuần. Chỉ thêm ngày nghỉ nếu người dùng yêu cầu rõ ràng như "kế hoạch cho cả tuần, tập 3 ngày".
+3.  **ĐỊNH DẠNG NGÀY NGHỈ:** Nếu một ngày được xác định là ngày nghỉ, hãy đặt 'workoutFocus' thành "Ngày nghỉ" và 'exercises' phải là một mảng rỗng \`[]\`.
+4.  **ĐỊNH DẠNG ĐẦU RA (JSON):** Trả về một mảng các đối tượng. Mỗi đối tượng phải có: 'day', 'workoutFocus', 'exercises' (mảng), và 'dailyFitnessTip'.
 5.  **CHỈ TRẢ LỜI BẰNG JSON.**`;
 
+            prompt = workoutMode === 'Gymer' ? gymerPrompt : normalPrompt;
 
             schema = {
                 type: Type.ARRAY,
@@ -880,7 +892,7 @@ ${healthSummary}
         } finally {
             setIsGeneratingPlan(false);
         }
-    }, [analysisResult, userHistory, age, height, weight, gender, occupation, planRequest]);
+    }, [analysisResult, userHistory, age, height, weight, gender, occupation, planRequest, workoutMode]);
     
     const renderContent = () => {
         switch (appView) {
@@ -897,7 +909,7 @@ ${healthSummary}
                 return _jsx(PlanGeneratorView, { planType: "menu", planRequest: planRequest, onPlanRequestChange: setPlanRequest, handleGeneratePlan: handleGeneratePlan, isGeneratingPlan: isGeneratingPlan, error: error, generatedMealPlan: generatedMealPlan, generatedWorkoutPlan: generatedWorkoutPlan, analysisResult: analysisResult, userHistory: userHistory });
 
             case 'workoutPlanner':
-                return _jsx(PlanGeneratorView, { planType: "workout", planRequest: planRequest, onPlanRequestChange: setPlanRequest, handleGeneratePlan: handleGeneratePlan, isGeneratingPlan: isGeneratingPlan, error: error, generatedMealPlan: generatedMealPlan, generatedWorkoutPlan: generatedWorkoutPlan, analysisResult: analysisResult, userHistory: userHistory });
+                return _jsx(PlanGeneratorView, { planType: "workout", planRequest: planRequest, onPlanRequestChange: setPlanRequest, handleGeneratePlan: handleGeneratePlan, isGeneratingPlan: isGeneratingPlan, error: error, generatedMealPlan: generatedMealPlan, generatedWorkoutPlan: generatedWorkoutPlan, analysisResult: analysisResult, userHistory: userHistory, workoutMode: workoutMode, onWorkoutModeChange: setWorkoutMode });
 
             case 'form':
             default:
