@@ -1,23 +1,3 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# health_track_flutter
 
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/drive/1NYP1KcH69fulP32nHYbw8QQnraGoqKeP
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Get your Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey) and set it in [.env.local](.env.local):
-   ```
-   GEMINI_API_KEY=your_actual_api_key_here
-   ```
-3. Run the app:
-   `npm run dev`
+A new Flutter project.

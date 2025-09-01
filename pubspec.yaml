@@ -1,0 +1,26 @@
+name: health_track_flutter
+description: Flutter mobile port of the Health Track web app (VN).
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  google_generative_ai: ^0.4.6
+  file_picker: ^8.1.2
+  fl_chart: ^0.68.0
+  shared_preferences: ^2.3.2
+  intl: ^0.19.0
+  pdf: ^3.11.0
+  printing: ^5.13.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
