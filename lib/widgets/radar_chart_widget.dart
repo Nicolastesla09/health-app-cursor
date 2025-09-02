@@ -56,10 +56,11 @@ class _HealthRadarChartState extends State<HealthRadarChart> with SingleTickerPr
       final w = constraints.maxWidth;
       final h = constraints.maxHeight;
 
-      // Điều chỉnh khoảng cách chữ gần với đỉnh của biểu đồ
+      // Điều chỉnh khoảng cách chữ; fl_chart requires 0..1
+      // Use values close to 1 to move text near the edge.
       final titleOffset = widget.compact
-          ? (w < 200 ? 1.08 : (w < 280 ? 1.1 : 1.12))
-          : (w < 300 ? 1.12 : (w < 400 ? 1.14 : 1.16));
+          ? (w < 200 ? 0.92 : (w < 280 ? 0.94 : 0.96))
+          : (w < 300 ? 0.94 : (w < 400 ? 0.96 : 0.98));
 
       final fs = widget.compact
           ? (w < 200 ? 6.5 : (w < 280 ? 7.0 : 7.5))
@@ -134,14 +135,15 @@ class _HealthRadarChartState extends State<HealthRadarChart> with SingleTickerPr
                         ),
                         radarShape: RadarShape.polygon,
                         dataSets: [
-                          // Background area at max value to mimic the design
-                          RadarDataSet(
-                            dataEntries: [for (int i = 0; i < titles.length; i++) const RadarEntry(value: 10)],
-                            fillColor: const Color(0xFF4CAF50).withOpacity(0.10),
-                            borderColor: const Color(0xFF4CAF50).withOpacity(0.15),
-                            borderWidth: 1.0,
-                            entryRadius: 0,
-                          ),
+                          // Layered background rings (2,4,6,8,10)
+                          for (final level in [2, 4, 6, 8, 10])
+                            RadarDataSet(
+                              dataEntries: [for (int i = 0; i < titles.length; i++) RadarEntry(value: level.toDouble())],
+                              fillColor: const Color(0xFF4CAF50).withOpacity(0.06 + (level / 10) * 0.06),
+                              borderColor: Colors.transparent,
+                              borderWidth: 0,
+                              entryRadius: 0,
+                            ),
                           // Actual data
                           RadarDataSet(
                             dataEntries: [for (final v in values) RadarEntry(value: v.toDouble())],
@@ -219,4 +221,3 @@ class _HealthRadarChartState extends State<HealthRadarChart> with SingleTickerPr
     return name; // fallback
   }
 }
-

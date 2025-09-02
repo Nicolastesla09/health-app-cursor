@@ -171,7 +171,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 16),
               SizedBox(
                 height: 160,
-                child: HealthRadarChart(categories: r.categories, compact: true),
+                child: HealthRadarChart(categories: r.categories),
               ),
             ],
           );
@@ -183,7 +183,7 @@ class DashboardScreen extends StatelessWidget {
               Expanded(
                 child: SizedBox(
                   height: 180,
-                  child: HealthRadarChart(categories: r.categories, compact: true),
+                  child: HealthRadarChart(categories: r.categories),
                 ),
               ),
             ],
