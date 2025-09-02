@@ -123,107 +123,306 @@ class _FormScreenState extends State<FormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Phân tích xét nghiệm AI', style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 12),
-            Wrap(
-              runSpacing: 12,
-              spacing: 12,
+            // Header với icon và title
+            Row(
               children: [
-                SizedBox(
-                  width: 180,
-                  child: TextField(
-                    controller: _age,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Tuổi', prefixIcon: Icon(Icons.cake_outlined)),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.analytics_outlined,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 24,
                   ),
                 ),
-                SizedBox(
-                  width: 200,
-                  child: TextField(
-                    controller: _height,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Chiều cao (cm)', prefixIcon: Icon(Icons.height)),
-                  ),
-                ),
-                SizedBox(
-                  width: 200,
-                  child: TextField(
-                    controller: _weight,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Cân nặng (kg)', prefixIcon: Icon(Icons.monitor_weight_outlined)),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Phân tích xét nghiệm AI',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Tải lên kết quả xét nghiệm để nhận phân tích chi tiết',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 24),
+            
+            // Thông tin cá nhân
+            _buildSectionTitle('Thông tin cá nhân', Icons.person_outline),
+            const SizedBox(height: 16),
+            
+            // Form fields - responsive cho mobile
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 400;
+                if (isNarrow) {
+                  // Mobile layout - vertical
+                  return Column(
+                    children: [
+                      _buildTextField(_age, 'Tuổi', Icons.cake_outlined, TextInputType.number),
+                      const SizedBox(height: 16),
+                      _buildTextField(_height, 'Chiều cao (cm)', Icons.height, TextInputType.number),
+                      const SizedBox(height: 16),
+                      _buildTextField(_weight, 'Cân nặng (kg)', Icons.monitor_weight_outlined, TextInputType.number),
+                    ],
+                  );
+                } else {
+                  // Tablet layout - horizontal
+                  return Wrap(
+                    runSpacing: 16,
+                    spacing: 16,
+                    children: [
+                      SizedBox(
+                        width: 160,
+                        child: _buildTextField(_age, 'Tuổi', Icons.cake_outlined, TextInputType.number),
+                      ),
+                      SizedBox(
+                        width: 180,
+                        child: _buildTextField(_height, 'Chiều cao (cm)', Icons.height, TextInputType.number),
+                      ),
+                      SizedBox(
+                        width: 180,
+                        child: _buildTextField(_weight, 'Cân nặng (kg)', Icons.monitor_weight_outlined, TextInputType.number),
+                      ),
+                    ],
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            
+            // Giới tính
+            _buildSectionTitle('Giới tính', Icons.person),
             const SizedBox(height: 12),
             Row(
               children: [
-                const Text('Giới tính:'),
-                const SizedBox(width: 12),
-                ChoiceChip(
-                  label: const Text('Nam'),
-                  selected: _gender == 'Nam',
-                  onSelected: (_) => setState(() => _gender = 'Nam'),
+                Expanded(
+                  child: ChoiceChip(
+                    label: const Text('Nam'),
+                    selected: _gender == 'Nam',
+                    onSelected: (_) => setState(() => _gender = 'Nam'),
+                    selectedColor: Theme.of(context).colorScheme.primaryContainer,
+                    checkmarkColor: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-                const SizedBox(width: 8),
-                ChoiceChip(
-                  label: const Text('Nữ'),
-                  selected: _gender == 'Nữ',
-                  onSelected: (_) => setState(() => _gender = 'Nữ'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ChoiceChip(
+                    label: const Text('Nữ'),
+                    selected: _gender == 'Nữ',
+                    onSelected: (_) => setState(() => _gender = 'Nữ'),
+                    selectedColor: Theme.of(context).colorScheme.primaryContainer,
+                    checkmarkColor: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            
+            // Công việc
+            _buildTextField(_occupation, 'Công việc hiện tại', Icons.work_outline, TextInputType.text),
+            const SizedBox(height: 20),
+            
+            // Tải lên file
+            _buildSectionTitle('Tải lên kết quả xét nghiệm', Icons.upload_file),
             const SizedBox(height: 12),
-            TextField(
-              controller: _occupation,
-              decoration: const InputDecoration(labelText: 'Công việc hiện tại', prefixIcon: Icon(Icons.work_outline)),
-            ),
-            const SizedBox(height: 12),
-            Wrap(spacing: 8, runSpacing: 8, children: [
-              OutlinedButton.icon(onPressed: _takePhoto, icon: const Icon(Icons.photo_camera_outlined), label: const Text('Chụp ảnh')),
-              OutlinedButton.icon(
-                onPressed: _pickFiles,
-                icon: const Icon(Icons.cloud_upload_outlined),
-                label: const Text('Chọn/Thêm ảnh hoặc PDF'),
-              ),
-            ]),
-            if (_files.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final entry in _files.asMap().entries)
-                    Chip(
-                      avatar: const Icon(Icons.insert_drive_file_outlined),
-                      label: Text(entry.value.name, overflow: TextOverflow.ellipsis),
-                      onDeleted: () {
-                        setState(() {
-                          _files.removeAt(entry.key);
-                        });
-                      },
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _takePhoto,
+                    icon: const Icon(Icons.photo_camera_outlined),
+                    label: const Text('Chụp ảnh'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: _pickFiles,
+                    icon: const Icon(Icons.cloud_upload_outlined),
+                    label: const Text('Chọn file'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (_files.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _buildSectionTitle('File đã chọn (${_files.length})', Icons.file_copy),
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                  ),
+                ),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _files.length,
+                  separatorBuilder: (context, index) => Divider(
+                    height: 1,
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                  ),
+                  itemBuilder: (context, index) {
+                    final file = _files[index];
+                    return ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: file.mimeType.startsWith('image/')
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : Theme.of(context).colorScheme.errorContainer,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          file.mimeType.startsWith('image/') ? Icons.image : Icons.picture_as_pdf,
+                          color: file.mimeType.startsWith('image/')
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.error,
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(
+                        file.name,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        file.mimeType.startsWith('image/') ? 'Hình ảnh' : 'PDF',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          fontSize: 12,
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.remove_circle_outline),
+                        onPressed: () {
+                          setState(() {
+                            _files.removeAt(index);
+                          });
+                        },
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
+            
+            // Nút phân tích
             if (_error != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.error.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _error!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            SizedBox(
+            
+            Container(
               width: double.infinity,
               child: FilledButton.icon(
                 onPressed: !_valid || _loading ? null : _analyze,
                 icon: _loading
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Icon(Icons.send),
-                label: Text(_loading ? 'Đang xử lý...' : 'Phân tích'),
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.analytics_outlined, size: 20),
+                label: Text(
+                  _loading ? 'Đang phân tích...' : 'Bắt đầu phân tích',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Helper methods
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 20,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, TextInputType keyboardType) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       ),
     );
   }

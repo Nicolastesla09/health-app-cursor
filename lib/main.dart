@@ -1,14 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/analysis.dart';
 import 'l10n.dart';
 import 'screens/auth_screen.dart';
-// import 'screens/results_screen.dart';
-// import 'screens/results_empty.dart';
 import 'screens/planner_screen.dart';
-// import 'screens/history_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/health_screen.dart';
 import 'screens/add_screen.dart';
@@ -16,6 +14,16 @@ import 'screens/profile_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Set system UI overlay style for better mobile experience
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+    ),
+  );
+  
   runApp(const HealthTrackApp());
 }
 
@@ -86,7 +94,6 @@ class _HealthTrackAppState extends State<HealthTrackApp> {
       final key = 'health_history_${email}';
       final list = prefs.getStringList(key) ?? const <String>[];
       if (list.isNotEmpty) {
-        // Newest item stored at index 0 in _saveToHistory
         final latestJson = list.first;
         final m = jsonDecode(latestJson) as Map<String, dynamic>;
         final analysis = AnalysisResult.fromJson(m['analysis'] as Map<String, dynamic>);
@@ -98,8 +105,6 @@ class _HealthTrackAppState extends State<HealthTrackApp> {
   }
 
   Future<void> _saveToHistory(AnalysisResult result, Map<String, dynamic> inputs) async {
-    // Always update in-memory last result so the Results tab can render,
-    // even if the user isn't signed in yet. Persist to history only when logged in.
     if (_email != null) {
       final prefs = await SharedPreferences.getInstance();
       final key = 'health_history_${_email!}';
@@ -128,19 +133,16 @@ class _HealthTrackAppState extends State<HealthTrackApp> {
       child: MaterialApp(
         title: 'Health Track',
         themeMode: _themeMode,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF5A8A3A)),
-          useMaterial3: true,
-        ),
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF98C379), brightness: Brightness.dark),
-          useMaterial3: true,
-        ),
+        theme: _buildLightTheme(),
+        darkTheme: _buildDarkTheme(),
+        debugShowCheckedModeBanner: false,
         home: _email == null
-            ? AuthScreen(onSignedIn: _onSignedIn, onThemeToggle: () {
-                _setThemeMode(_themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark);
-              })
+            ? AuthScreen(
+                onSignedIn: _onSignedIn, 
+                onThemeToggle: () {
+                  _setThemeMode(_themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark);
+                }
+              )
             : _Home(
                 email: _email!,
                 themeMode: _themeMode,
@@ -151,6 +153,95 @@ class _HealthTrackAppState extends State<HealthTrackApp> {
                 lang: _lang,
                 onLanguageChange: _setLanguage,
               ),
+      ),
+    );
+  }
+
+  ThemeData _buildLightTheme() {
+    return ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF5A8A3A),
+        brightness: Brightness.light,
+      ),
+      useMaterial3: true,
+      appBarTheme: const AppBarTheme(
+        elevation: 0,
+        scrolledUnderElevation: 1,
+        centerTitle: false,
+      ),
+      cardTheme: CardThemeData(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        filled: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      ),
+    );
+  }
+
+  ThemeData _buildDarkTheme() {
+    return ThemeData(
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF98C379),
+        brightness: Brightness.dark,
+      ),
+      useMaterial3: true,
+      appBarTheme: const AppBarTheme(
+        elevation: 0,
+        scrolledUnderElevation: 1,
+        centerTitle: false,
+      ),
+      cardTheme: CardThemeData(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        filled: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }
@@ -181,64 +272,182 @@ class _Home extends StatefulWidget {
   State<_Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<_Home> {
-  String _tab = 'dashboard';
+class _HomeState extends State<_Home> with TickerProviderStateMixin {
+  int _selectedIndex = 0;
+  late PageController _pageController;
+  late AnimationController _fabAnimationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _fabAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _fabAnimationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _fabAnimationController.dispose();
+    super.dispose();
+  }
+
+  void _onDestinationSelected(int index) {
+    setState(() => _selectedIndex = index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+    
+    // Animate FAB for add screen
+    if (index == 2) {
+      _fabAnimationController.reverse();
+    } else {
+      _fabAnimationController.forward();
+    }
+  }
+
+  void _onAddPressed() {
+    setState(() => _selectedIndex = 2);
+    _pageController.animateToPage(
+      2,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+    _fabAnimationController.reverse();
+  }
 
   @override
   Widget build(BuildContext context) {
     final lang = AppStringsScope.of(context);
     final s = AppStrings(lang);
+    
     return Scaffold(
-      floatingActionButton: FloatingActionButton.small(
-        onPressed: () => setState(() => _tab = 'add'),
-        tooltip: s.t('add'),
-        child: const Icon(Icons.add, size: 20),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      extendBody: true,
       appBar: AppBar(
-        title: const Text('Health Track'),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.favorite,
+                color: Theme.of(context).colorScheme.onPrimary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text('Health Track'),
+          ],
+        ),
         actions: [
           IconButton(
             tooltip: 'Đổi giao diện',
             onPressed: () => widget.onThemeChange(
               widget.themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark,
             ),
-            icon: Icon(widget.themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: Icon(
+                widget.themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
+                key: ValueKey(widget.themeMode),
+              ),
+            ),
           ),
         ],
       ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: switch (_tab) {
-          'dashboard' => DashboardScreen(
-              lastResult: widget.lastResult,
-              onNewAnalysis: () => setState(() => _tab = 'add'),
-              onLogMeal: () => setState(() => _tab = 'plans'),
-              onUpdateBody: () => setState(() => _tab = 'add'),
-            ),
-          'health' => HealthScreen(email: widget.email, lastResult: widget.lastResult),
-          'add' => AddScreen(
-              onAnalysisDone: (r, inputs) async {
-                await widget.onSaveHistory(r, inputs);
-                if (mounted) setState(() => _tab = 'health');
-              },
-            ),
-          'plans' => const PlannerScreen(),
-          'profile' => ProfileScreen(lang: widget.lang, onLanguageChange: widget.onLanguageChange, onSignOut: widget.onSignOut),
-          _ => DashboardScreen(lastResult: widget.lastResult, onNewAnalysis: () => setState(() => _tab = 'add'), onLogMeal: () => setState(() => _tab = 'plans'), onUpdateBody: () => setState(() => _tab = 'add')),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() => _selectedIndex = index);
+          if (index == 2) {
+            _fabAnimationController.reverse();
+          } else {
+            _fabAnimationController.forward();
+          }
         },
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: switch (_tab) { 'dashboard' => 0, 'health' => 1, 'plans' => 2, 'profile' => 3, _ => 0 },
-        onDestinationSelected: (i) => setState(() => _tab = ['dashboard', 'health', 'plans', 'profile'][i]),
-        destinations: [
-          NavigationDestination(icon: const Icon(Icons.dashboard_outlined), label: s.t('dashboard')),
-          NavigationDestination(icon: const Icon(Icons.favorite_outline), label: s.t('health')),
-          NavigationDestination(icon: const Icon(Icons.auto_awesome), label: s.t('plans')),
-          NavigationDestination(icon: const Icon(Icons.person_outline), label: s.t('profile')),
+        children: [
+          DashboardScreen(
+            lastResult: widget.lastResult,
+            onNewAnalysis: () => _onDestinationSelected(2),
+            onLogMeal: () => _onDestinationSelected(3),
+            onUpdateBody: () => _onDestinationSelected(2),
+          ),
+          HealthScreen(email: widget.email, lastResult: widget.lastResult),
+          AddScreen(
+            onAnalysisDone: (r, inputs) async {
+              await widget.onSaveHistory(r, inputs);
+              if (mounted) _onDestinationSelected(1);
+            },
+          ),
+          const PlannerScreen(),
+          ProfileScreen(
+            lang: widget.lang,
+            onLanguageChange: widget.onLanguageChange,
+            onSignOut: widget.onSignOut,
+          ),
         ],
+      ),
+      floatingActionButton: ScaleTransition(
+        scale: _fabAnimationController,
+        child: FloatingActionButton(
+          onPressed: _onAddPressed,
+          tooltip: s.t('add'),
+          elevation: 4,
+          child: const Icon(Icons.add, size: 28),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: NavigationBar(
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: _onDestinationSelected,
+          elevation: 0,
+          backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.95),
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.dashboard_outlined),
+              selectedIcon: const Icon(Icons.dashboard),
+              label: s.t('dashboard'),
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.favorite_outline),
+              selectedIcon: const Icon(Icons.favorite),
+              label: s.t('health'),
+            ),
+            NavigationDestination(
+              icon: const SizedBox(width: 24), // Placeholder for FAB space
+              label: '',
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.auto_awesome_outlined),
+              selectedIcon: const Icon(Icons.auto_awesome),
+              label: s.t('plans'),
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.person_outline),
+              selectedIcon: const Icon(Icons.person),
+              label: s.t('profile'),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-
