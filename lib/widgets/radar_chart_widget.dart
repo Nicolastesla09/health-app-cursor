@@ -55,12 +55,12 @@ class _HealthRadarChartState extends State<HealthRadarChart> with SingleTickerPr
     return LayoutBuilder(builder: (ctx, constraints) {
       final w = constraints.maxWidth;
       final h = constraints.maxHeight;
-      
+
       // Điều chỉnh khoảng cách chữ gần với đỉnh của biểu đồ
       final titleOffset = widget.compact
           ? (w < 200 ? 1.08 : (w < 280 ? 1.1 : 1.12))
           : (w < 300 ? 1.12 : (w < 400 ? 1.14 : 1.16));
-      
+
       final fs = widget.compact
           ? (w < 200 ? 6.5 : (w < 280 ? 7.0 : 7.5))
           : (w < 300 ? 7.5 : (w < 400 ? 8.0 : 8.5));
@@ -125,6 +125,7 @@ class _HealthRadarChartState extends State<HealthRadarChart> with SingleTickerPr
                           color: const Color(0xFF2D3436),
                           height: 1.1,
                         ),
+                        // Also set per-title position below
                         titlePositionPercentageOffset: titleOffset,
                         tickCount: 6, // 0, 2, 4, 6, 8, 10
                         ticksTextStyle: TextStyle(
@@ -133,17 +134,25 @@ class _HealthRadarChartState extends State<HealthRadarChart> with SingleTickerPr
                         ),
                         radarShape: RadarShape.polygon,
                         dataSets: [
-                          // Actual data with animation - green line like in the image
+                          // Background area at max value to mimic the design
                           RadarDataSet(
-                            fillColor: const Color(0xFF4CAF50).withOpacity(0.2 * _animation.value),
-                            borderColor: const Color(0xFF4CAF50), // Green color from image
-                            borderWidth: (widget.compact ? 2.0 : 2.5) * _animation.value,
-                            entryRadius: (widget.compact ? 2.5 : 3.0) * _animation.value,
-                            dataEntries: [for (final v in values) RadarEntry(value: v.toDouble() * _animation.value)],
+                            dataEntries: [for (int i = 0; i < titles.length; i++) const RadarEntry(value: 10)],
+                            fillColor: const Color(0xFF4CAF50).withOpacity(0.10),
+                            borderColor: const Color(0xFF4CAF50).withOpacity(0.15),
+                            borderWidth: 1.0,
+                            entryRadius: 0,
+                          ),
+                          // Actual data
+                          RadarDataSet(
+                            dataEntries: [for (final v in values) RadarEntry(value: v.toDouble())],
+                            fillColor: const Color(0xFF4CAF50).withOpacity(0.20 * _animation.value),
+                            borderColor: const Color(0xFF4CAF50),
+                            borderWidth: (widget.compact ? 2.0 : 2.5) * (_animation.value.clamp(0.3, 1.0)),
+                            entryRadius: (widget.compact ? 2.5 : 3.0) * (_animation.value.clamp(0.3, 1.0)),
                           ),
                         ],
                         getTitle: (index, angle) {
-                          final t = titles[index];
+                          final t = titles[index % titles.length];
                           final short = _shortenTitle(t, widget.compact);
                           return RadarChartTitle(
                             text: short,
@@ -168,7 +177,7 @@ class _HealthRadarChartState extends State<HealthRadarChart> with SingleTickerPr
     if (title.length <= (compact ? 10 : 12)) {
       return title;
     }
-    
+
     final words = title.split(' ');
     if (words.length == 1) {
       // Single word - break by characters
@@ -176,23 +185,23 @@ class _HealthRadarChartState extends State<HealthRadarChart> with SingleTickerPr
       if (title.length <= maxLen) return title;
       return title.substring(0, maxLen - 1) + '\n' + title.substring(maxLen - 1);
     }
-    
+
     // Multiple words - smart break
     if (words.length == 2) {
       return '${words[0]}\n${words[1]}';
     }
-    
+
     // More than 2 words - group intelligently
     final mid = (words.length / 2).ceil();
     final firstPart = words.sublist(0, mid).join(' ');
     final secondPart = words.sublist(mid).join(' ');
-    
+
     final maxLineLen = compact ? 8 : 10;
     if (firstPart.length > maxLineLen || secondPart.length > maxLineLen) {
       // If either part is too long, use first word only
       return '${words[0]}\n${words.sublist(1).join(' ')}';
     }
-    
+
     return '$firstPart\n$secondPart';
   }
 
@@ -203,10 +212,11 @@ class _HealthRadarChartState extends State<HealthRadarChart> with SingleTickerPr
     if (n.contains('gan')) return 'Liver';
     if (n.contains('tim') || n.contains('mạch') || n.contains('tim mạch')) return 'Heart';
     if (n.contains('huyết') || n.contains('huyet')) return 'Blood';
-    if (n.contains('chuyển hoá') || n.contains('chuyển hóa') || n.contains('chuyen hoa')) return 'Metabolism';
+    if (n.contains('chuyển hoá') || n.contains('chuyen hoa')) return 'Metabolism';
     if (n.contains('tiết niệu')) return 'Urinary';
     if (n.contains('tổng quan') || n.contains('tong quan')) return 'Overall';
     if (n.contains('bmi') || n.contains('cân nặng')) return 'BMI';
     return name; // fallback
   }
 }
+
