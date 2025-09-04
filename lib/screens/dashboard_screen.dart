@@ -171,7 +171,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 16),
               SizedBox(
                 height: 160,
-                child: HealthRadarChart(categories: r.categories),
+                child: HealthRadarChart(categories: r.categories, compact: true),
               ),
             ],
           );
@@ -183,7 +183,7 @@ class DashboardScreen extends StatelessWidget {
               Expanded(
                 child: SizedBox(
                   height: 180,
-                  child: HealthRadarChart(categories: r.categories),
+                  child: HealthRadarChart(categories: r.categories, compact: true),
                 ),
               ),
             ],
@@ -339,7 +339,7 @@ class DashboardScreen extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: LinearGradient(
@@ -525,4 +525,3 @@ class _Highlight {
     required this.subtitle,
   });
 }
-

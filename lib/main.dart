@@ -35,7 +35,6 @@ class HealthTrackApp extends StatefulWidget {
 }
 
 class _HealthTrackAppState extends State<HealthTrackApp> {
-  ThemeMode _themeMode = ThemeMode.system;
   String? _email;
   AnalysisResult? _lastResult;
   AppLang _lang = AppLang.vi;
@@ -49,15 +48,10 @@ class _HealthTrackAppState extends State<HealthTrackApp> {
   Future<void> _restore() async {
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('user_email');
-    final theme = prefs.getString('theme_mode');
     final lang = prefs.getString('app_lang');
     setState(() {
       _email = email;
-      _themeMode = switch (theme) {
-        'dark' => ThemeMode.dark,
-        'light' => ThemeMode.light,
-        _ => ThemeMode.system,
-      };
+      // Force light mode
       _lang = (lang == 'en') ? AppLang.en : AppLang.vi;
     });
     if (email != null) {
@@ -65,15 +59,7 @@ class _HealthTrackAppState extends State<HealthTrackApp> {
     }
   }
 
-  Future<void> _setThemeMode(ThemeMode mode) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('theme_mode', switch (mode) {
-      ThemeMode.dark => 'dark',
-      ThemeMode.light => 'light',
-      ThemeMode.system => 'system',
-    });
-    setState(() => _themeMode = mode);
-  }
+  // Theme mode is fixed to light; method kept for API compatibility (unused)
 
   Future<void> _onSignedIn(String email) async {
     final prefs = await SharedPreferences.getInstance();
@@ -132,21 +118,18 @@ class _HealthTrackAppState extends State<HealthTrackApp> {
       lang: _lang,
       child: MaterialApp(
         title: 'Health Track',
-        themeMode: _themeMode,
+        themeMode: ThemeMode.light,
         theme: _buildLightTheme(),
-        darkTheme: _buildDarkTheme(),
         debugShowCheckedModeBanner: false,
         home: _email == null
             ? AuthScreen(
                 onSignedIn: _onSignedIn, 
-                onThemeToggle: () {
-                  _setThemeMode(_themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark);
-                }
+                onThemeToggle: () {}
               )
             : _Home(
                 email: _email!,
-                themeMode: _themeMode,
-                onThemeChange: _setThemeMode,
+                themeMode: ThemeMode.light,
+                onThemeChange: (_) {},
                 onSignOut: _onSignOut,
                 lastResult: _lastResult,
                 onSaveHistory: _saveToHistory,
@@ -169,12 +152,7 @@ class _HealthTrackAppState extends State<HealthTrackApp> {
         scrolledUnderElevation: 1,
         centerTitle: false,
       ),
-      cardTheme: CardThemeData(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
+
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           shape: RoundedRectangleBorder(
@@ -201,50 +179,7 @@ class _HealthTrackAppState extends State<HealthTrackApp> {
     );
   }
 
-  ThemeData _buildDarkTheme() {
-    return ThemeData(
-      brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF98C379),
-        brightness: Brightness.dark,
-      ),
-      useMaterial3: true,
-      appBarTheme: const AppBarTheme(
-        elevation: 0,
-        scrolledUnderElevation: 1,
-        centerTitle: false,
-      ),
-      cardTheme: CardThemeData(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ),
-      ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        filled: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      ),
-    );
-  }
+  // Dark theme removed
 }
 
 class _Home extends StatefulWidget {
@@ -347,21 +282,7 @@ class _HomeState extends State<_Home> with TickerProviderStateMixin {
             const Text('Health Track'),
           ],
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Đổi giao diện',
-            onPressed: () => widget.onThemeChange(
-              widget.themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark,
-            ),
-            icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: Icon(
-                widget.themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
-                key: ValueKey(widget.themeMode),
-              ),
-            ),
-          ),
-        ],
+        actions: const [],
       ),
       body: PageView(
         controller: _pageController,

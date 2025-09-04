@@ -34,8 +34,6 @@ class AiService {
     required List<({Uint8List bytes, String mimeType})> files,
     String langCode = 'vi',
   }) async {
-    // API key resolved via env or baked-in fallback.
-
     final bmi = weightKg / ((heightCm / 100.0) * (heightCm / 100.0));
 
     final prompt = _buildPromptV2(age, heightCm, weightKg, bmi, gender, occupation, langCode);
@@ -95,6 +93,29 @@ class AiService {
     return AnalysisResult.fromJson(jsonMap);
   }
 
+  // New method for form screen compatibility
+  Future<AnalysisResult> analyzeLabs({
+    required List<({Uint8List bytes, String mimeType, String name})> files,
+    required int age,
+    required String gender,
+    required double height,
+    required double weight,
+    String? occupation,
+  }) async {
+    // Convert files format for the existing analyze method
+    final convertedFiles = files.map((f) => (bytes: f.bytes, mimeType: f.mimeType)).toList();
+    
+    return analyze(
+      age: age,
+      heightCm: height,
+      weightKg: weight,
+      gender: gender,
+      occupation: occupation ?? '',
+      files: convertedFiles,
+      langCode: 'vi',
+    );
+  }
+
   // Wrap base prompt with language guidance to ensure EN/VI outputs
   String _buildPromptV2(int age, double height, double weight, double bmi, String gender, String occupation, String langCode) {
     final base = _buildPrompt(age, height, weight, bmi, gender, occupation);
@@ -149,7 +170,6 @@ Chỉ trả JSON đúng schema.''';
     required String goal, // e.g., giảm cân/tăng cơ/ăn sạch
     required String constraints, // thói quen, dị ứng, khung giờ
   }) async {
-    // API key resolved via env or baked-in fallback.
     final prompt = '''
 Bạn là chuyên gia dinh dưỡng. Tạo kế hoạch ăn uống 7 ngày bằng tiếng Việt, thực tế, dễ nấu tại Việt Nam.
 Mục tiêu: $goal
@@ -195,7 +215,6 @@ Trả JSON với schema:
     required String level, // mới bắt đầu/trung bình/nâng cao
     required String equipment, // có/không có dụng cụ, thời gian mỗi buổi
   }) async {
-    // API key resolved via env or baked-in fallback.
     final prompt = '''
 Bạn là HLV thể hình. Tạo kế hoạch tập luyện 7 ngày bằng tiếng Việt, an toàn, có thể thực hiện tại nhà hoặc phòng gym.
 Mục tiêu: $goal

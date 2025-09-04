@@ -185,15 +185,19 @@ class _ResultsScreenState extends State<ResultsScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Tổng quan Sức khỏe Chi tiết', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
           LayoutBuilder(builder: (ctx, c) {
             final isNarrow = c.maxWidth < 700;
             final chart = Container(
-              height: compact ? 240 : 280,
               decoration: BoxDecoration(border: Border.all(color: Theme.of(context).dividerColor), borderRadius: BorderRadius.circular(12)),
               padding: EdgeInsets.all(compact ? 8 : 12),
-              child: HealthRadarChart(categories: r.categories, compact: compact),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 320),
+                child: HealthRadarChart(
+                  categories: r.categories,
+                  compact: compact,
+                  title: 'Danh mục chính',
+                ),
+              ),
             );
             final cats = Column(children: [
               for (final c0 in r.categories)
